@@ -1,6 +1,7 @@
 use std::fs;
 
-use anyhow::Result;
+use anyhow::{Result};
+use anyhow::anyhow;
 
 use crate::models::{DBState, Epic, Story, Status};
 
@@ -14,31 +15,88 @@ impl JiraDatabase {
     }
 
     pub fn read_db(&self) -> Result<DBState> {
-        todo!()
+        // should one check that it was not called before new
+        // or before it was initialized 
+        self.database.read_db()
     }
     
     pub fn create_epic(&self, epic: Epic) -> Result<u32> {
-        todo!()
+        let mut db = self.database.read_db()?;
+        let new_id =  db.last_item_id + 1;
+        db.last_item_id = new_id;
+        db.epics.insert(new_id, epic);
+        self.database.write_db(&db)?;
+        Ok(new_id)
     }
     
     pub fn create_story(&self, story: Story, epic_id: u32) -> Result<u32> {
-        todo!()
+        let mut db = self.database.read_db()?;
+        let new_id =  db.last_item_id + 1;
+        db.last_item_id = new_id;
+
+        // link epic with new story
+        let epic = db.epics.get_mut(&epic_id).ok_or(anyhow!("No such epic"))?;
+        epic.stories.push(new_id);
+
+        // add new story
+        db.stories.insert(new_id, story);
+        self.database.write_db(&db)?;
+        
+        Ok(new_id)
     }
     
     pub fn delete_epic(&self, epic_id: u32) -> Result<()> {
-        todo!()
+        let mut db = self.database.read_db()?;
+        
+        let epic = db.epics.get_mut(&epic_id).ok_or(anyhow!("No such epic"))?;
+
+        // delete epic's stories if any
+        for s in &epic.stories {
+            db.stories.remove(&s).ok_or(anyhow!("No such strory. Cannot delete."))?;
+        }
+
+        // delete target epic
+        db.epics.remove(&epic_id).ok_or(anyhow!("No such epic. Cannot delete."))?;
+
+        self.database.write_db(&db)?;
+        Ok(())
     }
     
     pub fn delete_story(&self,epic_id: u32, story_id: u32) -> Result<()> {
-        todo!()
+        let mut db = self.database.read_db()?;
+        
+        let epic = db.epics.get_mut(&epic_id).ok_or(anyhow!("No such epic"))?;
+
+        for v in epic.stories.iter_mut() {
+            if &story_id == v {
+                // todo better way to delete ?
+                // save index and delete after loop ?
+                *v = 0;
+            }
+        }
+
+        db.stories.remove(&story_id).ok_or(anyhow!("No such story"))?;
+
+        self.database.write_db(&db)?;
+        Ok(())
     }
     
     pub fn update_epic_status(&self, epic_id: u32, status: Status) -> Result<()> {
-        todo!()
+        let mut db = self.database.read_db()?;
+        
+        db.epics.get_mut(&epic_id).ok_or(anyhow!("No such epic"))?.status = status;
+        
+        self.database.write_db(&db)?;
+        Ok(())
     }
     
     pub fn update_story_status(&self, story_id: u32, status: Status) -> Result<()> {
-        todo!()
+        let mut db = self.database.read_db()?;
+        
+        db.stories.get_mut(&story_id).ok_or(anyhow!("No such epic"))?.status = status;
+        
+        self.database.write_db(&db)?;
+        Ok(())
     }
 }
 
@@ -81,14 +139,12 @@ pub mod test_utils {
 
     impl Database for MockDB {
         fn read_db(&self) -> Result<DBState> {
-            // TODO: fix this error by deriving the appropriate traits for Story
             let state = self.last_written_state.borrow().clone();
             Ok(state)
         }
 
         fn write_db(&self, db_state: &DBState) -> Result<()> {
             let latest_state = &self.last_written_state;
-            // TODO: fix this error by deriving the appropriate traits for DBState
             *latest_state.borrow_mut() = db_state.clone();
             Ok(())
         }

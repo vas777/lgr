@@ -1,4 +1,6 @@
 use anyhow::Result;
+use std::fs::{self, read_to_string};
+use serde_json::{from_str};
 
 use crate::models::{DBState, Epic, Story, Status};
 
@@ -13,11 +15,22 @@ struct JSONFileDatabase {
 
 impl Database for JSONFileDatabase {
     fn read_db(&self) -> Result<DBState> {
-        todo!() // read the content's of self.file_path and deserialize it using serde
+        // read the content's of self.file_path and deserialize it using serde\
+        // let sdb = read_to_string(&self.file_path)?;
+        // let db: DBState = serde_json::from_str(&sdb)?;
+        // Ok(db)
+        Ok(serde_json::from_str(&read_to_string(&self.file_path)?)?)
+    
     }
 
     fn write_db(&self, db_state: &DBState) -> Result<()> {
-        todo!() // serialize db_state to json and store it in self.file_path
+        // serialize db_state to json and store it in self.file_path
+        // let sdb = serde_json::to_string(&db_state)?;
+        // fs::write(&self.file_path, sdb)?;
+        // Ok(())
+        fs::write(&self.file_path, serde_json::to_string(&db_state)?)?;
+        Ok(())
+        
     }
 }
 

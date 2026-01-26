@@ -1,5 +1,5 @@
-mod models;
 mod db;
+mod models;
 mod ui;
 
 fn main() {

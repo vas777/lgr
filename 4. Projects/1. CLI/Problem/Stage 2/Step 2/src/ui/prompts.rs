@@ -21,21 +21,49 @@ impl Prompts {
 }
 
 fn create_epic_prompt() -> Epic {
-    todo!();
+    println!("----------------------------");
+    println!("Epic Name:");
+    let name = get_user_input();
+    println!("Epic Description:");
+    let description = get_user_input();
+    Epic::new(name.trim().to_owned(), description.trim().to_owned())
 }
 
 fn create_story_prompt() -> Story {
-    todo!();
+    println!("----------------------------");
+    println!("Stroy Name:");
+    let name = get_user_input();
+    println!("Story Description:");
+    let description = get_user_input();
+    Story::new(name.trim().to_owned(), description.trim().to_owned())
 }
-
 fn delete_epic_prompt() -> bool {
-    todo!();
+    println!("----------------------------");
+    print!("Are you sure you want to delete this epic? All stories in this epic will also be deleted [Y/n]:");
+    let answer = get_user_input();
+    match answer.trim() {
+        "Y" | "y" => true,
+        _ => false
+    }
+
 }
 
 fn delete_story_prompt() -> bool {
-    todo!();
+    println!("----------------------------");
+    print!("Are you sure you want to delete this story? [Y/n]:");
+    let answer = get_user_input();
+    match answer.trim() {
+        "Y" | "y" => true,
+        _ => false
+    }
 }
 
 fn update_status_prompt() -> Option<Status> {
-    todo!();
+    println!("----------------------------");
+    print!("New Status (1 - OPEN, 2 - IN-PROGRESS, 3 - RESOLVED, 4 - CLOSED):");
+    get_user_input()
+        .trim() // Remove whitespace/newlines
+        .parse::<u8>()
+        .ok()
+        .and_then(|num| Status::try_from(num).ok())
 }

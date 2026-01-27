@@ -17,11 +17,26 @@ pub enum Action {
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Clone)]
 pub enum Status {
-    Open,
+    Open = 1,
     InProgress,
     Resolved,
     Closed
 }
+
+impl TryFrom<u8> for Status {
+    type Error = ();
+
+    fn try_from(v: u8) -> Result<Self, Self::Error> {
+        match v {
+            1 => Ok(Status::Open),
+            2 => Ok(Status::InProgress),
+            3 => Ok(Status::Resolved),
+            4 => Ok(Status::Closed),
+            _ => Err(()),
+        }
+    }
+}
+
 
 impl Display for Status {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

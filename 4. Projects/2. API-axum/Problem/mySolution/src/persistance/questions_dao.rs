@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use sqlx::PgPool;
+use sqlx::{PgPool, postgres};
 
 use crate::models::{DBError, Question, QuestionDetail};
 
@@ -16,7 +16,7 @@ pub struct QuestionsDaoImpl {
 
 impl QuestionsDaoImpl {
     pub fn new(db: PgPool) -> Self {
-        todo!() // return an instance of QuestionsDaoImpl
+        QuestionsDaoImpl { db: db.clone() }
     }
 }
 
@@ -32,7 +32,21 @@ impl QuestionsDao for QuestionsDaoImpl {
         // ```
         // If executing the query results in an error, map that error to
         // the`DBError::Other` error and early return from this function.
-        let record = todo!();
+
+        let conn = self.db.acquire();
+
+        let q = sqlx::query!(
+            "
+            INSERT INTO questions ( title, description )
+            VALUES ( $1, $2 )
+            RETURNING *
+            ", 
+        question.title,
+        question.description
+        );
+
+        
+        let record = q.fetch(&conn).await;
 
         // Populate the QuestionDetail fields using `record`.
         Ok(QuestionDetail {

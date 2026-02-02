@@ -1,38 +1,34 @@
+#[macro_use]
+extern crate log;
 
-use std::env;
+extern crate pretty_env_logger;
 
 use axum::{
-    Error, Router,
     routing::{delete, get, post},
+    Router,
 };
+
+use dotenvy::dotenv;
+
+use sqlx::postgres::PgPoolOptions;
 
 mod handlers;
 mod models;
+mod persistance;
 
 use handlers::*;
-use log::*;
-use sqlx::postgres::PgPoolOptions;
 
 #[tokio::main]
 async fn main() {
 
     pretty_env_logger::init();
 
-    dotenvy::dotenv().expect("where is my dotenv?");
+    dotenv().expect("where is my dotenv?");
 
-    let url = env::var("DATABASE_URL").expect("DATABASE_URL not set ?");
+    let url = std::env::var("DATABASE_URL").expect("DATABASE_URL not set ?");
     let pool = PgPoolOptions::new()
         .max_connections(5)
         .connect(&url).await.unwrap();
-
-    let recs = sqlx::query!("SELECT * FROM questions")
-        .fetch_all(&pool)
-        .await
-        .unwrap();
-
-
-    info!("********* Question Records *********");
-    info!("{:?}", recs);
 
     let app = Router::new()
         .route("/question", post(create_question))

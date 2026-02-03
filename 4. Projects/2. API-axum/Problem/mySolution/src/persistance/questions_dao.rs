@@ -33,8 +33,6 @@ impl QuestionsDao for QuestionsDaoImpl {
         // If executing the query results in an error, map that error to
         // the`DBError::Other` error and early return from this function.
 
-        let conn = self.db.acquire();
-
         let q = sqlx::query!(
             "
             INSERT INTO questions ( title, description )
@@ -43,17 +41,14 @@ impl QuestionsDao for QuestionsDaoImpl {
             ", 
         question.title,
         question.description
-        );
-
+        ).fetch_one(&self.db).await.map_err(|e| DBError::Other(Box::new(e)))?;
         
-        let record = q.fetch(&conn).await;
-
         // Populate the QuestionDetail fields using `record`.
         Ok(QuestionDetail {
-            question_uuid: todo!(),
-            title: todo!(),
-            description: todo!(),
-            created_at: todo!(),
+            question_uuid: q.question_uuid.into(),
+            title: q.title.into(),
+            description: q.description.into(),
+            created_at: q.created_at.to_string(),
         })
     }
 

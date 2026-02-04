@@ -38,11 +38,14 @@ impl QuestionsDao for QuestionsDaoImpl {
             INSERT INTO questions ( title, description )
             VALUES ( $1, $2 )
             RETURNING *
-            ", 
-        question.title,
-        question.description
-        ).fetch_one(&self.db).await.map_err(|e| DBError::Other(Box::new(e)))?;
-        
+            ",
+            question.title,
+            question.description
+        )
+        .fetch_one(&self.db)
+        .await
+        .map_err(|e| DBError::Other(Box::new(e)))?;
+
         // Populate the QuestionDetail fields using `record`.
         Ok(QuestionDetail {
             question_uuid: q.question_uuid.into(),
@@ -58,7 +61,9 @@ impl QuestionsDao for QuestionsDaoImpl {
         //
         // If `parse_str` returns an error, map the error to a `DBError::InvalidUUID` error
         // and early return from this function.
-        let uuid = todo!();
+
+        let uuid = sqlx::types::Uuid::parse_str(&question_uuid)
+            .map_err(|e| DBError::InvalidUUID(e.to_string()))?;
 
         // TODO: Make a database query to delete a question given the question uuid.
         // Here is the SQL query:
@@ -67,6 +72,16 @@ impl QuestionsDao for QuestionsDaoImpl {
         // ```
         // If executing the query results in an error, map that error
         // to a `DBError::Other` error and early return from this function.
+
+        sqlx::query!(
+            "
+            DELETE FROM questions WHERE question_uuid = $1
+            ",
+            uuid,
+        )
+        .fetch_one(&self.db)
+        .await
+        .map_err(|e| DBError::Other(Box::new(e)))?;
 
         Ok(())
     }
@@ -79,10 +94,25 @@ impl QuestionsDao for QuestionsDaoImpl {
         // ```
         // If executing the query results in an error, map that error
         // to a `DBError::Other` error and early return from this function.
-        let records = todo!();
+        let records = sqlx::query!(
+            "
+            SELECT * FROM questions
+            "
+        )
+        .fetch_all(&self.db)
+        .await
+        .map_err(|e| DBError::Other(Box::new(e)))?;
 
         // Iterate over `records` and map each record to a `QuestionDetail` type
-        let questions = todo!();
+        let questions = records
+            .into_iter()
+            .map(|e| QuestionDetail {
+                title: e.title,
+                question_uuid: e.question_uuid.into(),
+                description: e.description.into(),
+                created_at: e.created_at.to_string(),
+            })
+            .collect();
 
         Ok(questions)
     }

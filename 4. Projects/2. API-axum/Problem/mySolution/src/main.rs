@@ -4,8 +4,8 @@ extern crate log;
 extern crate pretty_env_logger;
 
 use axum::{
-    routing::{delete, get, post},
     Router,
+    routing::{delete, get, post},
 };
 
 use dotenvy::dotenv;
@@ -20,7 +20,6 @@ use handlers::*;
 
 #[tokio::main]
 async fn main() {
-
     pretty_env_logger::init();
 
     dotenv().expect("where is my dotenv?");
@@ -28,7 +27,9 @@ async fn main() {
     let url = std::env::var("DATABASE_URL").expect("DATABASE_URL not set ?");
     let pool = PgPoolOptions::new()
         .max_connections(5)
-        .connect(&url).await.unwrap();
+        .connect(&url)
+        .await
+        .unwrap();
 
     let app = Router::new()
         .route("/question", post(create_question))

@@ -16,7 +16,7 @@ pub struct QuestionsDaoImpl {
 
 impl QuestionsDaoImpl {
     pub fn new(db: PgPool) -> Self {
-        QuestionsDaoImpl { db: db.clone() }
+        QuestionsDaoImpl { db: db }
     }
 }
 
@@ -79,7 +79,7 @@ impl QuestionsDao for QuestionsDaoImpl {
             ",
             uuid,
         )
-        .fetch_one(&self.db)
+        .execute(&self.db)
         .await
         .map_err(|e| DBError::Other(Box::new(e)))?;
 

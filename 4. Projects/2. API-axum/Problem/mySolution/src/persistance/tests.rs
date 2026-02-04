@@ -426,11 +426,11 @@ mod questions_tests {
                 description: "test description".to_owned(),
             })
             .await
-            .map_err(|e| format!("{:?}", e))?;
+            .map_err(|e| format!("create {:?}", e))?;
 
         doa.delete_question(result.question_uuid)
             .await
-            .map_err(|e| format!("{:?}", e))?;
+            .map_err(|e| format!("delete {:?}", e))?;
 
         let results = doa.get_questions().await.map_err(|e| format!("{:?}", e))?;
 

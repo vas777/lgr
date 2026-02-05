@@ -1,13 +1,12 @@
 use crate::models::*;
 use axum::{Json, response::IntoResponse};
+mod handlers_inner;
 
 // ---- CRUD for Questions ----
 
 pub async fn create_question(Json(question): Json<Question>) -> impl IntoResponse {
     println!("Creating question");
     let q: Question = question.into();
-
-    dbg!(&q);
 
     Json(QuestionDetail {
         question_uuid: "uuid".to_owned(),
@@ -30,7 +29,6 @@ pub async fn read_questions() -> impl IntoResponse {
 pub async fn delete_question(Json(question_uuid): Json<QuestionId>) {
     println!("Deliting question");
     let q: QuestionId = question_uuid.into();
-    dbg!(q);
 }
 
 // ---- CRUD for Answers ----
@@ -42,8 +40,6 @@ pub async fn delete_question(Json(question_uuid): Json<QuestionId>) {
 pub async fn create_answer(Json(answer): Json<Answer>) -> impl IntoResponse {
     println!("Creating question");
     let a: Answer = answer.into();
-
-    dbg!(&a);
 
     Json(Answer {
         question_uuid: "quetion_uuid".to_owned(),
@@ -71,5 +67,4 @@ pub async fn read_answers() -> impl IntoResponse {
 pub async fn delete_answer(Json(answer_uuid): Json<AnswerId>) {
     println!("Deliting answer");
     let a: AnswerId = answer_uuid.into();
-    dbg!(a);
 }

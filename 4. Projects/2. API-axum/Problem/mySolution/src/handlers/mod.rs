@@ -17,29 +17,20 @@ impl IntoResponse for handlers_inner::HandlerError {
     }
 }
 
-// // ---- CRUD for Questions ----
+// ---- CRUD for Questions ----
 
 pub async fn create_question(
     State(AppState { questions_dao, .. }): State<AppState>,
     Json(question): Json<Question>,
 ) -> Result<impl IntoResponse,handlers_inner::HandlerError> {
-    // TODO: update return type to be of type `Result`. Both the Ok and Err case should contain `impl IntoResponse`.
-    // TODO: Replace the fake data below with a call to `handlers_inner::create_question`.
-    // Return the result wrapped in JSON in the success case and an `HandlerError` in the error case.
-    // NOTE: `IntoResponse` is implemented for `HandlerError` above.
-   
-    todo!()
-
-   
+    handlers_inner::create_question(question, questions_dao.as_ref()).await.map(Json)  
 }
 
 pub async fn read_questions(// TODO: add questions_dao from app state as an argument
     State(AppState { questions_dao, .. }): State<AppState>,
 ) -> impl IntoResponse {
 
-    let cq = questions_dao.get_questions().await.expect("remove me later");
-
-    Json(cq)
+    handlers_inner::read_questions(questions_dao.as_ref()).await.map(Json)
 }
 
 pub async fn delete_question(
@@ -47,8 +38,7 @@ pub async fn delete_question(
     State(AppState { questions_dao, .. }): State<AppState>,
     Json(question_uuid): Json<QuestionId>,
 ) {
-    let _r= questions_dao.delete_question(question_uuid.question_uuid).await;
-
+    handlers_inner::delete_question(question_uuid,questions_dao.as_ref()).await;
 }
 
 // ---- CRUD for Answers ----
@@ -58,7 +48,7 @@ pub async fn create_answer(
     State(AppState { answers_dao, .. }): State<AppState>,
     Json(answer): Json<Answer>,
 ) -> impl IntoResponse {
-    Json(answers_dao.create_answer(answer).await.expect("remove me later"))
+    handlers_inner::create_answer(answer, answers_dao.as_ref()).await.map(Json)
 }
 
 pub async fn read_answers(
@@ -66,7 +56,7 @@ pub async fn read_answers(
     State(AppState { answers_dao, .. }): State<AppState>,
     Json(question_uuid): Json<QuestionId>,
 ) -> impl IntoResponse {
-    Json(answers_dao.get_answers(question_uuid.question_uuid).await.expect("remove me later"))
+    handlers_inner::read_answers(question_uuid, answers_dao.as_ref()).await.map(Json)
 }
 
 pub async fn delete_answer(
@@ -74,75 +64,5 @@ pub async fn delete_answer(
     State(AppState { answers_dao, .. }): State<AppState>,
     Json(answer_uuid): Json<AnswerId>,
 ) {
-    let r = answers_dao.delete_answer(answer_uuid.answer_uuid).await;
+    handlers_inner::delete_answer(answer_uuid, answers_dao.as_ref()).await;
 }
-
-
-// pub async fn read_questions(
-//     State(AppState { questions_dao, .. }): State<AppState>,
-// ) -> impl IntoResponse {
-//     // TODO: update return type to be of type `Result`. Both the Ok and Err case should contain `impl IntoResponse`.
-//     // TODO: Replace the fake data below with a call to `handlers_inner::read_questions`.
-//     // Return the result wrapped in JSON in the success case and an `HandlerError` in the error case.
-//     // NOTE: `IntoResponse` is implemented for `HandlerError` above.
-//     Json(vec![QuestionDetail {
-//         question_uuid: "question_uuid".to_owned(),
-//         title: "title".to_owned(),
-//         description: "description".to_owned(),
-//         created_at: "created_at".to_owned(),
-//     }])
-// }
-
-// pub async fn delete_question(
-//     State(AppState { questions_dao, .. }): State<AppState>,
-//     Json(question_uuid): Json<QuestionId>,
-// ) {
-//     // TODO: update return type to be of type `Result`. Both the Ok and Err case should contain `impl IntoResponse`.
-//     // TODO: Make a call to `handlers_inner::delete_question`.
-//     // Return a unit type in the success case and an `HandlerError` in the error case.
-//     // NOTE: `IntoResponse` is implemented for `HandlerError` above.
-// }
-
-// // ---- CRUD for Answers ----
-
-// pub async fn create_answer(
-//     State(AppState { answers_dao, .. }): State<AppState>,
-//     Json(answer): Json<Answer>,
-// ) -> impl IntoResponse {
-//     // TODO: update return type to be of type `Result`. Both the Ok and Err case should contain `impl IntoResponse`.
-//     // TODO: Replace the fake data below with a call to `handlers_inner::create_answer`.
-//     // Return the result wrapped in JSON in the success case and an `HandlerError` in the error case.
-//     // NOTE: `IntoResponse` is implemented for `HandlerError` above.
-//     Json(AnswerDetail {
-//         answer_uuid: "answer_uuid".to_owned(),
-//         question_uuid: "question_uuid".to_owned(),
-//         content: "content".to_owned(),
-//         created_at: "created_at".to_owned(),
-//     })
-// }
-
-// pub async fn read_answers(
-//     State(AppState { answers_dao, .. }): State<AppState>,
-//     Json(question_uuid): Json<QuestionId>,
-// ) -> impl IntoResponse {
-//     // TODO: update return type to be of type `Result`. Both the Ok and Err case should contain `impl IntoResponse`.
-//     // TODO: Replace the fake data below with a call to `handlers_inner::read_answers`.
-//     // Return the result wrapped in JSON in the success case and an `HandlerError` in the error case.
-//     // NOTE: `IntoResponse` is implemented for `HandlerError` above.
-//     Json(vec![AnswerDetail {
-//         answer_uuid: "answer_uuid".to_owned(),
-//         question_uuid: "question_uuid".to_owned(),
-//         content: "content".to_owned(),
-//         created_at: "created_at".to_owned(),
-//     }])
-// }
-
-// pub async fn delete_answer(
-//     State(AppState { answers_dao, .. }): State<AppState>,
-//     Json(answer_uuid): Json<AnswerId>,
-// ) {
-//     // TODO: update return type to be of type `Result`. Both the Ok and Err case should contain `impl IntoResponse`.
-//     // TODO: Make a call to `handlers_inner::delete_answer`.
-//     // Return a unit type in the success case and an `HandlerError` in the error case.
-//     // NOTE: `IntoResponse` is implemented for `HandlerError` above.
-// }
